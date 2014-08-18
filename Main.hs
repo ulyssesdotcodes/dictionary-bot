@@ -1,68 +1,82 @@
-{-# LANGUAGE OverloadedStrings, NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings, NoImplicitPrelude, DeriveGeneric #-}
 
-import BasePrelude hiding (intercalate, filter)
+import BasePrelude hiding (intercalate, filter, tail)
 import Control.Lens ((^.), (^?))
 import Control.Lens.Getter (Getting)
-import Data.Aeson ((.:), (.:?), decode, encode, FromJSON(..), Value(..), fromJSON)
+import Data.Aeson ((.:), (.:?), decode, encode, FromJSON(..), ToJSON(..), Value(..), fromJSON)
 import Data.Aeson.Lens (key, values)
+import Data.Aeson.Types
 import Data.Attoparsec.Text.Lazy
 import Data.Char (isLetter, isAscii)
 import Data.Map (Map)
-import Data.Text.Lazy hiding (span, drop, words)
+import Data.Vector
+import Data.Text.Lazy hiding (span, drop, words, map, tail)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text.Internal as TS
 import Data.ByteString.Lazy.Internal (ByteString)
-import GHC.Generics (Generic)
+import GHC.Generics
 import Network.Linklater (say, slashSimple, Command(..), Config(..), Message(..), Icon(..), Format(..))
 import Network.Wai.Handler.Warp (run)
 import Network.Wreq hiding (params)
 
-getWordResponse :: Text -> IO (Response ByteString)
-getWordResponse word = do
-    r <- get ("https://api.pearson.com/v2/dictionaries/entries?headword=" <> unpack word)
-    return r
+data DictionaryResponse =
+    DictionaryResponse { results :: Array
+      } deriving (Show, Generic)
 
-getDefinition :: Response ByteString -> Maybe Value
-getDefinition response = 
-    (response ^? responseBody . key "results" . values . key "senses" . values . key "definition")
+data WordResult =
+    WordResult {  headword       :: Text
+                , part_of_speech :: !Text
+                , senses         :: !Array
+                  } deriving (Show, Generic)
 
-getPartOfSpeech :: Response ByteString -> Maybe Value
-getPartOfSpeech response =
-    (response ^? responseBody . key "results" . values . key "part_of_speech")
+data Sense = 
+    Sense { definition :: Text
+      } deriving (Show, Generic)
 
-valueToString :: Value -> TS.Text
-valueToString (String value) =
-    value
+instance FromJSON WordResult
+instance ToJSON WordResult
 
-createDefinition :: (Maybe TS.Text, Maybe TS.Text) -> Maybe Text
-createDefinition (Just pos, Just def) =
-    Just $ fromStrict pos <> ". " <> fromStrict def
-createDefinition (Nothing, Just def) =
-    Just $ fromStrict def
-createDefinition (_, Nothing) = Nothing
+instance FromJSON DictionaryResponse
+instance ToJSON DictionaryResponse
 
-getFullDefinition :: IO (Response ByteString) -> IO (Maybe Text)
-getFullDefinition response = do
-    r <- response
-    return (createDefinition (fmap valueToString $ getPartOfSpeech r, fmap valueToString $ getDefinition r))
+instance FromJSON Sense
+instance ToJSON Sense
 
-define :: Text -> IO Text
-define checkWord = do
-    w <- definition
-    case w of
-      Just v -> return (checkWord <> " - " <> v)
-      Nothing -> return "something went wrong"
-    where 
-        definition = getFullDefinition $ getWordResponse checkWord
+getWordResponses :: Text -> IO Array
+getWordResponses word = do
+    dictionaryResponse <- asJSON =<< get ("https://api.pearson.com/v2/dictionaries/entries?apikey=lZTHxIMWBVZID7KsjnpM0Ds8wTbLveUg&search=english&headword=" <> unpack word) 
+    return $ results $ dictionaryResponse ^. responseBody 
+
+getFirstWordResponse :: Array -> Maybe WordResult
+getFirstWordResponse arr =
+  case parseFirstWordResult arr of
+    (Nothing) -> Nothing
+    (Just maybeResponse) ->
+      case maybeResponse of
+        (Just a) -> Just a
+        (Nothing) -> getFirstWordResponse $ tail arr
+  where 
+    parseFirstWordResult arr' = 
+      case (arr' !? 0) of
+        (Just headArr) -> parseMaybe parseJSON headArr
+        (Nothing) -> Nothing
+
+
+getFirstSense :: Array -> Sense
+getFirstSense arr = case parseFirstSense arr of
+  (Just a) -> a
+  (Nothing) -> getFirstSense $ tail arr
+  where parseFirstSense arr' = parseMaybe parseJSON $ arr' ! 0
 
 dict :: Maybe Command -> IO Text
-dict (Just (Command user channel (Just text))) =
-  define text
-  -- where 
-  --  config' = (Config "trello.slack.com" . filter (/= '\n') . pack) <$> readFile "token"
-  --      messageOf result = FormattedMessage (EmojiIcon "one") "calcbot" channel [FormatAt user, FormatString ("Definition of \""<> text <> "\" is " <> " = " <> result)]
-  --      resultText = define text
-  --      debug = True
+dict (Just (Command user channel (Just text))) = do
+  w <- parsedWordResponses
+  case getFirstWordResponse w of
+    (Just aWord) -> return ((headword aWord) <> " - " <> (part_of_speech aWord) <> ". " <> (definition . getFirstSense . senses $ aWord))
+    (Nothing) -> return "No definition found :("
+  where 
+      parsedWordResponses = getWordResponses text
+
 dict _ = return "Type more!"
 
 main :: IO ()

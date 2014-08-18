@@ -18,8 +18,8 @@ version = Version {versionBranch = [1,0,0,0], versionTags = []}
 bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/srv/www/upopple.com/slack/calculator/.cabal-sandbox/bin"
-libdir     = "/srv/www/upopple.com/slack/calculator/.cabal-sandbox/lib/x86_64-linux-ghc-7.8.2/dict-1.0.0.0"
-datadir    = "/srv/www/upopple.com/slack/calculator/.cabal-sandbox/share/x86_64-linux-ghc-7.8.2/dict-1.0.0.0"
+libdir     = "/srv/www/upopple.com/slack/calculator/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.3/dict-1.0.0.0"
+datadir    = "/srv/www/upopple.com/slack/calculator/.cabal-sandbox/share/x86_64-osx-ghc-7.8.3/dict-1.0.0.0"
 libexecdir = "/srv/www/upopple.com/slack/calculator/.cabal-sandbox/libexec"
 sysconfdir = "/srv/www/upopple.com/slack/calculator/.cabal-sandbox/etc"
 

@@ -7,15 +7,15 @@
   (major1) == 0 && (major2) <  7 || \
   (major1) == 0 && (major2) == 7 && (minor) <= 0)
 
-/* package attoparsec-0.12.1.0 */
-#define VERSION_attoparsec "0.12.1.0"
+/* package attoparsec-0.12.1.1 */
+#define VERSION_attoparsec "0.12.1.1"
 #define MIN_VERSION_attoparsec(major1,major2,minor) (\
   (major1) <  0 || \
   (major1) == 0 && (major2) <  12 || \
   (major1) == 0 && (major2) == 12 && (minor) <= 1)
 
-/* package base-4.7.0.0 */
-#define VERSION_base "4.7.0.0"
+/* package base-4.7.0.1 */
+#define VERSION_base "4.7.0.1"
 #define MIN_VERSION_base(major1,major2,minor) (\
   (major1) <  4 || \
   (major1) == 4 && (major2) <  7 || \
@@ -63,12 +63,12 @@
   (major1) == 0 && (major2) <  7 || \
   (major1) == 0 && (major2) == 7 && (minor) <= 0)
 
-/* package lens-4.3.2 */
-#define VERSION_lens "4.3.2"
+/* package lens-4.3.3 */
+#define VERSION_lens "4.3.3"
 #define MIN_VERSION_lens(major1,major2,minor) (\
   (major1) <  4 || \
   (major1) == 4 && (major2) <  3 || \
-  (major1) == 4 && (major2) == 3 && (minor) <= 2)
+  (major1) == 4 && (major2) == 3 && (minor) <= 3)
 
 /* package linklater-2.0.0.3 */
 #define VERSION_linklater "2.0.0.3"
@@ -77,12 +77,12 @@
   (major1) == 2 && (major2) <  0 || \
   (major1) == 2 && (major2) == 0 && (minor) <= 0)
 
-/* package mtl-2.2.1 */
-#define VERSION_mtl "2.2.1"
+/* package mtl-2.1.3.1 */
+#define VERSION_mtl "2.1.3.1"
 #define MIN_VERSION_mtl(major1,major2,minor) (\
   (major1) <  2 || \
-  (major1) == 2 && (major2) <  2 || \
-  (major1) == 2 && (major2) == 2 && (minor) <= 1)
+  (major1) == 2 && (major2) <  1 || \
+  (major1) == 2 && (major2) == 1 && (minor) <= 3)
 
 /* package text-1.1.1.3 */
 #define VERSION_text "1.1.1.3"
@@ -105,15 +105,22 @@
   (major1) == 0 && (major2) <  3 || \
   (major1) == 0 && (major2) == 3 && (minor) <= 8)
 
-/* package wai-3.0.1 */
-#define VERSION_wai "3.0.1"
+/* package vector-0.10.11.0 */
+#define VERSION_vector "0.10.11.0"
+#define MIN_VERSION_vector(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  10 || \
+  (major1) == 0 && (major2) == 10 && (minor) <= 11)
+
+/* package wai-3.0.1.1 */
+#define VERSION_wai "3.0.1.1"
 #define MIN_VERSION_wai(major1,major2,minor) (\
   (major1) <  3 || \
   (major1) == 3 && (major2) <  0 || \
   (major1) == 3 && (major2) == 0 && (minor) <= 1)
 
-/* package warp-3.0.0.4 */
-#define VERSION_warp "3.0.0.4"
+/* package warp-3.0.0.8 */
+#define VERSION_warp "3.0.0.8"
 #define MIN_VERSION_warp(major1,major2,minor) (\
   (major1) <  3 || \
   (major1) == 3 && (major2) <  0 || \
@@ -126,33 +133,33 @@
   (major1) == 0 && (major2) <  1 || \
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 
-/* tool gcc-4.6 */
-#define TOOL_VERSION_gcc "4.6"
+/* tool gcc-4.2.1 */
+#define TOOL_VERSION_gcc "4.2.1"
 #define MIN_TOOL_VERSION_gcc(major1,major2,minor) (\
   (major1) <  4 || \
-  (major1) == 4 && (major2) <  6 || \
-  (major1) == 4 && (major2) == 6 && (minor) <= 0)
+  (major1) == 4 && (major2) <  2 || \
+  (major1) == 4 && (major2) == 2 && (minor) <= 1)
 
-/* tool ghc-7.8.2 */
-#define TOOL_VERSION_ghc "7.8.2"
+/* tool ghc-7.8.3 */
+#define TOOL_VERSION_ghc "7.8.3"
 #define MIN_TOOL_VERSION_ghc(major1,major2,minor) (\
   (major1) <  7 || \
   (major1) == 7 && (major2) <  8 || \
-  (major1) == 7 && (major2) == 8 && (minor) <= 2)
+  (major1) == 7 && (major2) == 8 && (minor) <= 3)
 
-/* tool ghc-pkg-7.8.2 */
-#define TOOL_VERSION_ghc_pkg "7.8.2"
+/* tool ghc-pkg-7.8.3 */
+#define TOOL_VERSION_ghc_pkg "7.8.3"
 #define MIN_TOOL_VERSION_ghc_pkg(major1,major2,minor) (\
   (major1) <  7 || \
   (major1) == 7 && (major2) <  8 || \
-  (major1) == 7 && (major2) == 8 && (minor) <= 2)
+  (major1) == 7 && (major2) == 8 && (minor) <= 3)
 
-/* tool haddock-2.14.2 */
-#define TOOL_VERSION_haddock "2.14.2"
+/* tool haddock-2.14.3 */
+#define TOOL_VERSION_haddock "2.14.3"
 #define MIN_TOOL_VERSION_haddock(major1,major2,minor) (\
   (major1) <  2 || \
   (major1) == 2 && (major2) <  14 || \
-  (major1) == 2 && (major2) == 14 && (minor) <= 2)
+  (major1) == 2 && (major2) == 14 && (minor) <= 3)
 
 /* tool hpc-0.67 */
 #define TOOL_VERSION_hpc "0.67"
@@ -174,4 +181,11 @@
   (major1) <  1 || \
   (major1) == 1 && (major2) <  20 || \
   (major1) == 1 && (major2) == 20 && (minor) <= 0)
+
+/* tool pkg-config-0.28 */
+#define TOOL_VERSION_pkg_config "0.28"
+#define MIN_TOOL_VERSION_pkg_config(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  28 || \
+  (major1) == 0 && (major2) == 28 && (minor) <= 0)
 

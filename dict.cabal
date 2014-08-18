@@ -31,4 +31,5 @@ executable dict
                      , wreq
                      , linklater
                      , attoparsec
+                     , vector
   default-language:    Haskell2010
