@@ -2,20 +2,11 @@
 
 import BasePrelude hiding (intercalate, filter, tail)
 import Control.Lens ((^.), (^?))
-import Control.Lens.Getter (Getting)
-import Data.Aeson ((.:), (.:?), decode, encode, FromJSON(..), ToJSON(..), Value(..), fromJSON)
-import Data.Aeson.Lens (key, values)
 import Data.Aeson.Types
-import Data.Attoparsec.Text.Lazy
-import Data.Char (isLetter, isAscii)
-import Data.Map (Map)
 import Data.Vector as V
 import Data.Text.Lazy hiding (span, drop, words, map, tail)
-import Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text.Internal as TS
-import Data.ByteString.Lazy.Internal (ByteString)
-import GHC.Generics
-import Network.Linklater (say, slashSimple, Command(..), Config(..), Message(..), Icon(..), Format(..))
+import Network.Linklater (say, slashSimple, Command(..))
 import Network.Wai.Handler.Warp (run)
 import Network.Wreq hiding (params)
 
@@ -77,14 +68,24 @@ getFirstSense arr = case parseFirstSense arr of
   (Nothing) -> getFirstSense $ tail arr
   where parseFirstSense arr' = parseMaybe parseJSON $ arr' ! 0
 
-dict :: Maybe Command -> IO Text
-dict (Just (Command user channel (Just text))) = do
+define :: Text -> IO Text
+define text = do
   w <- parsedWordResponses
   case getFirstWordResponse w text of
     (Just aWord) -> return ((headword aWord) <> " - ca" <> (part_of_speech aWord) <> ". " <> (definition . getFirstSense . senses $ aWord))
     (Nothing) -> return "No definition found :("
   where 
       parsedWordResponses = getWordResponses text
+
+getCommandType :: Maybe Text -> (Text -> IO Text)
+getCommandType (Just command) =
+  case unpack command of
+    "urban" -> (\text -> return ("http://www.urbandictionary.com/define.php?term=" <> text))
+    _ -> define
+
+dict :: Maybe Command -> IO Text
+dict (Just (Command commandText user channel (Just text))) =
+  getCommandType commandText text
 
 dict _ = return "Type more!"
 
