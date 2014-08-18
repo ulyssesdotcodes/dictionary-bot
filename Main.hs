@@ -81,7 +81,7 @@ dict :: Maybe Command -> IO Text
 dict (Just (Command user channel (Just text))) = do
   w <- parsedWordResponses
   case getFirstWordResponse w of
-    (Just aWord) -> return ((headword aWord) <> " - ca" <> (part_of_speech aWord) <> ". " <> (definition . getFirstSense . senses $ aWord))
+    (Just aWord) -> return ((headword aWord) <> " - " <> (part_of_speech aWord) <> ". " <> (definition . getFirstSense . senses $ aWord))
     (Nothing) -> return "No definition found :("
   where 
       parsedWordResponses = getWordResponses text
