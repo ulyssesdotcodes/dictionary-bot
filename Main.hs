@@ -9,7 +9,7 @@ import Data.Aeson.Types
 import Data.Attoparsec.Text.Lazy
 import Data.Char (isLetter, isAscii)
 import Data.Map (Map)
-import Data.Vector
+import Data.Vector as V
 import Data.Text.Lazy hiding (span, drop, words, map, tail)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text.Internal as TS
@@ -25,8 +25,8 @@ data DictionaryResponse =
 
 data WordResult =
     WordResult {  headword       :: Text
-                , part_of_speech :: !Text
-                , senses         :: !Array
+                , part_of_speech :: Text
+                , senses         :: Array
                   } deriving (Show, Generic)
 
 data Sense = 
@@ -48,19 +48,28 @@ getWordResponses word = do
     return $ results $ dictionaryResponse ^. responseBody 
 
 getFirstWordResponse :: Array -> Maybe WordResult
-getFirstWordResponse arr =
-  case parseFirstWordResult arr of
+getFirstWordResponse arr = 
+  case (filteredResults !? 0) of
+    (Just maybeResult) -> maybeResult
     (Nothing) -> Nothing
-    (Just maybeResponse) ->
-      case maybeResponse of
-        (Just a) -> Just a
-        (Nothing) -> getFirstWordResponse $ tail arr
   where 
-    parseFirstWordResult arr' = 
-      case (arr' !? 0) of
-        (Just headArr) -> parseMaybe parseJSON headArr
-        (Nothing) -> Nothing
+    parsedResults = V.map (\v -> parseMaybe parseJSON v) arr
+    filteredResults = V.filter hasSenses parsedResults
 
+hasSenses :: Maybe WordResult -> Bool
+hasSenses mwr =
+  case mwr of
+    (Just wr) -> ((>) (V.length $ senses wr) 0) && (isJust (getFirstDefinitionSense (senses wr)))
+    (Nothing) -> False
+
+getFirstDefinitionSense :: Array -> Maybe Sense
+getFirstDefinitionSense s = 
+  case (filteredResults !? 0) of
+    (Just sense) -> sense
+    (Nothing) -> Nothing
+  where
+    parsedResults = V.map (\v -> parseMaybe parseJSON v) s
+    filteredResults = V.filter isJust parsedResults
 
 getFirstSense :: Array -> Sense
 getFirstSense arr = case parseFirstSense arr of
@@ -72,7 +81,7 @@ dict :: Maybe Command -> IO Text
 dict (Just (Command user channel (Just text))) = do
   w <- parsedWordResponses
   case getFirstWordResponse w of
-    (Just aWord) -> return ((headword aWord) <> " - " <> (part_of_speech aWord) <> ". " <> (definition . getFirstSense . senses $ aWord))
+    (Just aWord) -> return ((headword aWord) <> " - ca" <> (part_of_speech aWord) <> ". " <> (definition . getFirstSense . senses $ aWord))
     (Nothing) -> return "No definition found :("
   where 
       parsedWordResponses = getWordResponses text
