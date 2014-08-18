@@ -47,19 +47,19 @@ getWordResponses word = do
     dictionaryResponse <- asJSON =<< get ("https://api.pearson.com/v2/dictionaries/entries?apikey=lZTHxIMWBVZID7KsjnpM0Ds8wTbLveUg&search=english&headword=" <> unpack word) 
     return $ results $ dictionaryResponse ^. responseBody 
 
-getFirstWordResponse :: Array -> Maybe WordResult
-getFirstWordResponse arr = 
+getFirstWordResponse :: Array -> Text -> Maybe WordResult
+getFirstWordResponse arr word = 
   case (filteredResults !? 0) of
     (Just maybeResult) -> maybeResult
     (Nothing) -> Nothing
   where 
     parsedResults = V.map (\v -> parseMaybe parseJSON v) arr
-    filteredResults = V.filter hasSenses parsedResults
+    filteredResults = V.filter (hasSenses word) parsedResults
 
-hasSenses :: Maybe WordResult -> Bool
-hasSenses mwr =
+hasSenses :: Text -> Maybe WordResult -> Bool
+hasSenses word mwr =
   case mwr of
-    (Just wr) -> ((>) (V.length $ senses wr) 0) && (isJust (getFirstDefinitionSense (senses wr)))
+    (Just wr) -> ((>) (V.length $ senses wr) 0) && (isJust (getFirstDefinitionSense (senses wr))) && ((headword wr) == word)
     (Nothing) -> False
 
 getFirstDefinitionSense :: Array -> Maybe Sense
@@ -80,7 +80,7 @@ getFirstSense arr = case parseFirstSense arr of
 dict :: Maybe Command -> IO Text
 dict (Just (Command user channel (Just text))) = do
   w <- parsedWordResponses
-  case getFirstWordResponse w of
+  case getFirstWordResponse w text of
     (Just aWord) -> return ((headword aWord) <> " - ca" <> (part_of_speech aWord) <> ". " <> (definition . getFirstSense . senses $ aWord))
     (Nothing) -> return "No definition found :("
   where 
