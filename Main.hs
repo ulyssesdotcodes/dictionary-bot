@@ -2,6 +2,7 @@
 
 import BasePrelude hiding (intercalate, filter, tail)
 import Control.Lens ((^.), (^?))
+import Data.Aeson.Lens (key, values)
 import Data.Aeson.Types
 import Data.Vector as V
 import Data.Text.Lazy hiding (span, drop, words, map, tail)
@@ -77,10 +78,22 @@ define text = do
   where 
       parsedWordResponses = getWordResponses text
 
+getUrban :: Text -> IO (Maybe Value)
+getUrban text = do
+  r <- get ("http://api.urbandictionary.com/v0/define?term=" <> unpack text)
+  return $ r ^? responseBody . key "list" . values . key "definition"
+
+urban :: Text -> IO Text
+urban text = do
+  urbanText <- getUrban text
+  case urbanText of
+    (Just (String value)) -> return $ fromStrict value
+    _ -> return (pack $ show urbanText) 
+
 getCommandType :: Maybe Text -> (Text -> IO Text)
 getCommandType (Just command) =
   case unpack command of
-    "urban" -> (\text -> return ("http://www.urbandictionary.com/define.php?term=" <> text))
+    "urban" -> urban
     _ -> define
 
 dict :: Maybe Command -> IO Text
