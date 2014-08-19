@@ -87,8 +87,8 @@ urban :: Text -> IO Text
 urban text = do
   urbanText <- getUrban text
   case urbanText of
-    (Just (String value)) -> return $ fromStrict value
-    _ -> return (pack $ show urbanText) 
+    (Just (String value)) -> return (text <> " - " <> fromStrict value)
+    _ -> return (pack $ show urbanText)
 
 getCommandType :: Maybe Text -> (Text -> IO Text)
 getCommandType (Just command) =
