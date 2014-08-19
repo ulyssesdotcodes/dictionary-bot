@@ -1,15 +1,16 @@
 {-# LANGUAGE OverloadedStrings, NoImplicitPrelude, DeriveGeneric #-}
 
-import BasePrelude hiding (intercalate, filter, tail)
+import BasePrelude hiding (intercalate, tail)
 import Control.Lens ((^.), (^?))
 import Data.Aeson.Lens (key, values)
 import Data.Aeson.Types
-import Data.Vector as V
-import Data.Text.Lazy hiding (span, drop, words, map, tail)
+import qualified Data.Vector as V
+import Data.Text.Lazy hiding (span, drop, words, map, tail, filter)
 import qualified Data.Text.Internal as TS
 import Network.Linklater (say, slashSimple, Command(..))
 import Network.Wai.Handler.Warp (run)
 import Network.Wreq hiding (params)
+import System.Directory (doesFileExist)
 
 data DictionaryResponse =
     DictionaryResponse { results :: Array
@@ -34,14 +35,22 @@ instance ToJSON DictionaryResponse
 instance FromJSON Sense
 instance ToJSON Sense
 
+apiKey :: IO (String)
+apiKey = do
+    keyExists <- doesFileExist "apiKey"
+    case keyExists of
+        True -> fmap (filter (/= '\n')) (readFile "apiKey")
+        False -> return "lZTHxIMWBVZID7KsjnpM0Ds8wTbLveUg"
+
 getWordResponses :: Text -> IO Array
 getWordResponses word = do
-    dictionaryResponse <- asJSON =<< get ("https://api.pearson.com/v2/dictionaries/entries?apikey=lZTHxIMWBVZID7KsjnpM0Ds8wTbLveUg&search=english&headword=" <> unpack word) 
+    apiKeyText <- apiKey
+    dictionaryResponse <- asJSON =<< get ("https://api.pearson.com/v2/dictionaries/entries?apikey=" <> apiKeyText <> "&search=english&headword=" <> unpack word) 
     return $ results $ dictionaryResponse ^. responseBody 
 
 getFirstWordResponse :: Array -> Text -> Maybe WordResult
 getFirstWordResponse arr word = 
-  case (filteredResults !? 0) of
+  case (filteredResults V.!? 0) of
     (Just maybeResult) -> maybeResult
     (Nothing) -> Nothing
   where 
@@ -56,7 +65,7 @@ hasSenses word mwr =
 
 getFirstDefinitionSense :: Array -> Maybe Sense
 getFirstDefinitionSense s = 
-  case (filteredResults !? 0) of
+  case (filteredResults V.!? 0) of
     (Just sense) -> sense
     (Nothing) -> Nothing
   where
@@ -66,8 +75,8 @@ getFirstDefinitionSense s =
 getFirstSense :: Array -> Sense
 getFirstSense arr = case parseFirstSense arr of
   (Just a) -> a
-  (Nothing) -> getFirstSense $ tail arr
-  where parseFirstSense arr' = parseMaybe parseJSON $ arr' ! 0
+  (Nothing) -> getFirstSense $ V.tail arr
+  where parseFirstSense arr' = parseMaybe parseJSON $ arr' V.! 0
 
 define :: Text -> IO Text
 define text = do
