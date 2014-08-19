@@ -1,7 +1,7 @@
 Dictionary Bot (Alpha)
 ======================
 
-A Dictionary bot for Slack! Add it as a slash command integration. Go wild. Be word crazy.
+A Dictionary bot for Slack! Add it as a slash command integration. Go wild. Be word crazy. Make sure to add your pearson api key to the apiKey file or it will just use the sandbox one.
 
 Type `/[command] [word_to_define]` and the server will respond with a definition. Surprise bonus: the response includes the word's part of speech!
 
